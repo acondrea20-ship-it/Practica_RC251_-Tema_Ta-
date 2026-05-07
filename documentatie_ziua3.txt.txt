@@ -1,0 +1,10 @@
+1. Formulare HTML (3 reguli)
+Se începe cu <form>
+Fiecare câmp are name
+Butonul de trimitere are type="submit"
+2. Box Model (Margin vs Padding)
+Padding = spațiu în interiorul elementului
+Margin = spațiu în exteriorul elementului
+Padding = înăuntru, Margin = afară
+3. Selector de clasă CSS
+Se scrie cu punct .

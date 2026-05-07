@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laborator: The Perfect Box</title>
+    <style>
+        /* --- Stiluri Generale --- */
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .section-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* --- A. Provocarea Flexbox --- */
+        .flex-container {
+            display: flex; /* Activează modelul Flexbox */
+            height: 80vh; /* Înălțime conform cerinței (80% din viewport) */
+            border: 6px double #2c3e50; /* Bordură dublă */
+            background-color: #fff;
+            margin-bottom: 50px;
+            
+            /* Aliniere implicită pentru elemente (le trimitem spre start) */
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .box-1 { background-color: #e74c3c; } /* Rămâne în stânga-sus prin fluxul normal */
+
+        .box-2 { 
+            background-color: #3498db; 
+            /* 
+               COMENTARIU EXPLICATIV: 
+               Pentru a "rupe" alinierea standard și a centra .box-2 perfect pe ambele axe, 
+               am folosit 'margin: auto'. Într-un container Flexbox, margin: auto 
+               absoarbe tot spațiul liber disponibil în mod egal pe toate direcțiile.
+            */
+            margin: auto; 
+        }
+
+        .box-3 { 
+            background-color: #2ecc71; 
+            /* 
+               COMENTARIU EXPLICATIV: 
+               Pentru .box-3, am folosit 'align-self: flex-end'. Această proprietate 
+               permite elementului individual să ignore setarea 'align-items' a containerului 
+               (care este flex-start) și să se poziționeze la baza axei secundare.
+            */
+            align-self: flex-end; 
+        }
+
+        /* --- B. Provocarea Grid --- */
+        .grid-container {
+            display: grid; /* Activează modelul Grid */
+            /* Definim 2 coloane egale */
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 25px; /* Distanță exactă conform cerinței */
+            padding: 20px;
+            background-color: #eee;
+        }
+
+        .grid-item {
+            /* Culoare fundal rgba cu transparență */
+            background-color: rgba(52, 152, 219, 0.7); 
+            padding: 40px;
+            text-align: center;
+            color: #fff;
+            border: 1px solid #2980b9;
+        }
+
+        .item-1 {
+            /* Primul element ocupă 2 coloane (lățime completă) */
+            grid-column: span 2; 
+            background-color: rgba(155, 89, 182, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>A. Poziționare Geometrică (Flexbox)</h2>
+    <div class="flex-container">
+        <div class="box box-1">Box 1</div>
+        <div class="box box-2">Box 2</div>
+        <div class="box box-3">Box 3</div>
+    </div>
+
+    <hr>
+
+    <h2>B. Sistemul de Mozaic (Grid)</h2>
+    <div class="grid-container">
+        <!-- Item 1 va ocupa rândul de sus complet -->
+        <div class="grid-item item-1">Element 1 (Full Width)</div>
+        <div class="grid-item">Element 2</div>
+        <div class="grid-item">Element 3</div>
+        <div class="grid-item">Element 4</div>
+    </div>
+
+    <!-- 
+        Note suplimentare pentru livrabil:
+        Proprietăți folosite pentru "ruperea" aliniamentului:
+        1. margin: auto (pe .box-2) -> Centrează elementul prin ocuparea spațiului gol.
+        2. align-self: flex-end (pe .box-3) -> Suprascrie alinierea containerului pe axa verticală.
+    -->
+
+</body>
+</html>

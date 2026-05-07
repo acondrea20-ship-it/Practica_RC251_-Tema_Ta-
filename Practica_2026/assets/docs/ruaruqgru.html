@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livrabil Perechea II - Navigație și Grid</title>
+    <style>
+        /* --- RESET ȘI GENERALE --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* --- SARCINA 1: NAVIGAȚIE SMART CU EFECT DE TRANSPARENȚĂ --- */
+        .smart-nav {
+            position: sticky; /* Rămâne fixat la partea de sus a paginii */
+            top: 0;
+            z-index: 1000; /* Valoare mare pentru a fi mereu deasupra conținutului */
+            display: flex;
+            justify-content: space-between; /* Separă Logo de Link-uri */
+            align-items: center;
+            padding: 15px 8%;
+            
+            /* Glassmorphism Effect */
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* Suport pentru Safari */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #3498db;
+        }
+
+        /* --- SARCINA 2: GRID-UL DE SERVICII "SELF-ADAPTIVE" --- */
+        .services-section {
+            padding: 60px 8%;
+        }
+
+        .services-section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .services-grid {
+            display: grid;
+            /* Logica auto-fit: creează coloane automat în funcție de spațiu */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px; /* Gap exact de 25px conform cerinței */
+        }
+
+        /* 
+           EXPLICAȚIE OBLIGATORIE:
+           În acest context, '1fr' (una fracțiune) înseamnă că fiecare coloană va ocupa 
+           o parte egală din spațiul rămas disponibil în container, după ce browserul 
+           a calculat deja câte elemente de minim 280px pot încăpea pe un rând.
+        */
+
+        .card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px; /* Border-radius cerut */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Box-shadow discret */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eee;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- SARCINA 3: SECȚIUNEA MISIUNE - INVERSAREA FLUXULUI --- */
+        .mission-section {
+            padding: 60px 8%;
+            background-color: #fff;
+        }
+
+        .mission-container {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap; /* Permite trecerea pe rândul următor pe ecrane mici */
+        }
+
+        .mission-image, .mission-text {
+            flex: 1 1 400px; /* Se împart egal dar au o bază minimă */
+        }
+
+        .mission-image img {
+            width: 100%;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* Provocarea Mobile: Inversarea vizuală a elementelor */
+        @media (max-width: 768px) {
+            .mission-container {
+                /* Schimbăm direcția în coloană și inversăm ordinea elementelor */
+                flex-direction: column-reverse; 
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigația -->
+    <nav class="smart-nav">
+        <div class="logo">PerfectBox</div>
+        <ul class="nav-links">
+            <li><a href="#">Acasă</a></li>
+            <li><a href="#">Servicii</a></li>
+            <li><a href="#">Misiune</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Grid Adaptiv -->
+        <section class="services-section">
+            <h2>Servicii Profesionale</h2>
+            <div class="services-grid">
+                <article class="card">
+                    <h3>Design Responsiv</h3>
+                    <p>Interfețe care se adaptează perfect pe orice dispozitiv.</p>
+                </article>
+                <article class="card">
+                    <h3>Performanță</h3>
+                    <p>Optimizare cod pentru viteză maximă de încărcare.</p>
+                </article>
+                <article class="card">
+                    <h3>Securitate</h3>
+                    <p>Protecția datelor utilizatorilor prin criptare modernă.</p>
+                </article>
+                <article class="card">
+                    <h3>Consultantă IT</h3>
+                    <p>Soluții strategice pentru digitalizarea afacerii tale.</p>
+                </article>
+                <article class="card">
+                    <h3>Marketing</h3>
+                    <p>Creșterea vizibilității în motoarele de căutare.</p>
+                </article>
+                <article class="card">
+                    <h3>Suport 24/7</h3>
+                    <p>Asistență tehnică continuă pentru proiectele tale.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Secțiunea Misiune -->
+        <section class="mission-section">
+            <div class="mission-container">
+                <div class="mission-image">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Echipă lucrând">
+                </div>
+                <div class="mission-text">
+                    <h2>Misiunea Noastră</h2>
+                    <p>Ne propunem să simplificăm web-ul prin utilizarea unor tehnici de layout moderne, eliminând codul redundant și oferind utilizatorilor o experiență fluidă și estetică.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
