@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI Orchestrator — Dashboard</title>
+  <style>
+    /* ============================================================
+       FEATURES — UI Orchestration Engine
+       Optimization: GPU Layering enabled
+       Tehnici: Staggered logic, Inverse Stagger, Non-Linear Timing,
+                Clip-Path Reveal, Spring Easing, will-change GPU
+       ============================================================ */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --base-delay:    100ms;
+      --stagger-step:  150ms;
+      --exp-unit:      50ms;
+      --spring-easing: cubic-bezier(0.5, 1.5, 0.5, 1);
+      --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+      --bg-base:       #04081a;
+      --bg-card:       rgba(255, 255, 255, 0.04);
+      --border-card:   rgba(255, 255, 255, 0.10);
+      --border-hover:  rgba(130, 100, 255, 0.55);
+      --accent:        #7c5cfc;
+      --accent-glow:   rgba(124, 92, 252, 0.35);
+      --text-primary:  #f0eeff;
+      --text-muted:    rgba(220, 215, 255, 0.55);
+      --icon-bg:       rgba(124, 92, 252, 0.15);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 4rem 2rem 6rem;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .site-header {
+      text-align: center;
+      margin-bottom: 5rem;
+      animation: fadeDown 0.8s var(--ease-out-soft) forwards;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #a78bfa, #7c5cfc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Section Grid ───────────────────────────────────────── */
+    .ui-orchestrator {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Keyframes ──────────────────────────────────────────── */
+    @keyframes entrance {
+      0% {
+        opacity: 0;
+        transform: perspective(1000px) rotateX(-20deg) translateY(50px);
+        filter: blur(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(0deg) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes textReveal {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0% 0 0); }
+    }
+
+    @keyframes iconPop {
+      0%   { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+      70%  { transform: scale(1.15) rotate(4deg);  opacity: 1; }
+      100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── INVERSE STAGGERING LOGIC ────────────────────────────────
+       i=1 → mirror=3 → delay mic   (apare devreme)
+       i=2 → mirror=2 → delay mediu
+       i=3 → mirror=1 → delay mare  (apare ultimul)
+       i=4 → mirror=1 → delay mare  (apare ultimul)
+       i=5 → mirror=2 → delay mediu
+       i=6 → mirror=3 → delay mic   (apare devreme)
+       ─────────────────────────────────────────────────────────── */
+    .feature-wrapper[style*="--i: 1"] { --mirror: 3; }
+    .feature-wrapper[style*="--i: 2"] { --mirror: 2; }
+    .feature-wrapper[style*="--i: 3"] { --mirror: 1; }
+    .feature-wrapper[style*="--i: 4"] { --mirror: 1; }
+    .feature-wrapper[style*="--i: 5"] { --mirror: 2; }
+    .feature-wrapper[style*="--i: 6"] { --mirror: 3; }
+
+    /* ── NON-LINEAR TIMING ───────────────────────────────────────
+       mirror=1 → 1×50ms =  50ms
+       mirror=2 → 4×50ms = 200ms
+       mirror=3 → 9×50ms = 450ms
+       ─────────────────────────────────────────────────────────── */
+    .feature-wrapper {
+      /* Optimization: GPU Layering enabled */
+      will-change: transform, opacity;
+      --delay: calc(var(--mirror) * var(--mirror) * var(--exp-unit));
+      opacity: 0;
+      animation: entrance 0.9s var(--spring-easing) forwards;
+      animation-delay: var(--delay);
+    }
+
+    /* ── Card ───────────────────────────────────────────────── */
+    .feature-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      padding: 1.75rem;
+      border-radius: 20px;
+      border: 1px solid var(--border-card);
+      overflow: hidden;
+      height: 100%;
+      transition: border-color 0.3s ease, transform 0.3s var(--ease-out-soft);
+      cursor: default;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px var(--accent-glow);
+    }
+
+    /* ── Icon ───────────────────────────────────────────────── */
+    .card-icon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      /* Optimization: GPU Layering enabled */
+      will-change: transform, opacity;
+      opacity: 0;
+      animation: iconPop 0.6s var(--spring-easing) forwards;
+      animation-delay: calc(var(--delay) + 300ms);
+    }
+
+    .card-icon {
+      font-size: 1.75rem;
+      background: var(--icon-bg);
+      border-radius: 14px;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* ── Card Content ───────────────────────────────────────── */
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* ── Sub-sincronizare: Text Reveal ──────────────────────────
+       Textul apare DOAR după ce cardul s-a așezat (+400ms).
+       Clip-path creează efectul cinematic de dezvăluire.
+       ─────────────────────────────────────────────────────────── */
+    .stagger-text {
+      /* Optimization: GPU Layering enabled */
+      will-change: clip-path;
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      animation: textReveal 0.55s var(--ease-out-soft) forwards;
+    }
+
+    .card-content h3.stagger-text {
+      animation-delay: calc(var(--delay) + 400ms);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .card-content p.stagger-text {
+      animation-delay: calc(var(--delay) + 520ms);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <h1 class="hero-title">GPU-Orchestrated<br><span>Animation Engine</span></h1>
+    <p class="hero-sub">Staggered timeline · Micro-sincronizare · CSS pur</p>
+  </header>
+
+  <section class="ui-orchestrator">
+
+    <!-- Grup 1 — --i:1 (apare primul — Inverse Stagger) -->
+    <div class="feature-wrapper" style="--i: 1;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">🚀</div>
+          <span class="card-icon-label">GPU</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">Arhitectură GPU</h3>
+          <p class="stagger-text">Sincronizare la nivel de pixel pe layer dedicat.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grup 2 — --i:2 -->
+    <div class="feature-wrapper" style="--i: 2;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">⚡</div>
+          <span class="card-icon-label">Timing</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">Timing Exponențial</h3>
+          <p class="stagger-text">Delay calculat prin formulă i² × 50ms.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grup 3 — --i:3 -->
+    <div class="feature-wrapper" style="--i: 3;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">🎯</div>
+          <span class="card-icon-label">Clip</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">Clip-Path Reveal</h3>
+          <p class="stagger-text">Textul dezvăluit cinematic după intrarea cardului.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grup 4 — --i:4 -->
+    <div class="feature-wrapper" style="--i: 4;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">🔮</div>
+          <span class="card-icon-label">Spring</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">Spring Easing</h3>
+          <p class="stagger-text">cubic-bezier cu overshoot pentru naturalețe.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grup 5 — --i:5 -->
+    <div class="feature-wrapper" style="--i: 5;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">🧠</div>
+          <span class="card-icon-label">CLS</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">CLS Optimizat</h3>
+          <p class="stagger-text">will-change previne reflow în timpul animației.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grup 6 — --i:6 (apare primul — Inverse Stagger) -->
+    <div class="feature-wrapper" style="--i: 6;">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <div class="card-icon">🌐</div>
+          <span class="card-icon-label">CSS Var</span>
+        </div>
+        <div class="card-content">
+          <h3 class="stagger-text">Zero nth-child</h3>
+          <p class="stagger-text">Variabile inline înlocuiesc complet selectoarele redundante.</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Optimization: GPU Layering enabled -->
+
+</body>
+</html>

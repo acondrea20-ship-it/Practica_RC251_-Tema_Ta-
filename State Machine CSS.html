@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart CSS Form | Engineering Task</title>
+    
+    <style>
+        /* --- CRITICAL CSS (Above the Fold) --- */
+        :root {
+            --color-primary: #007bff;
+            --color-success: #00ff88;
+            --color-error: #ff4d4d;
+            --color-bg: #0f172a;
+            --color-surface: #1e293b;
+            --color-text: #f8fafc;
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+    
+        .form {
+            background: var(--color-surface);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form__group {
+            position: relative;
+            margin-bottom: 2rem;
+            will-change: transform; /* Optimizare GPU pentru elementele ce interacționează */
+        }
+
+        
+        .form__input {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--color-text);
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color var(--transition-smooth);
+        }
+
+        
+        .form__label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            pointer-events: none;
+            color: #94a3b8;
+            transition: transform var(--transition-smooth), color var(--transition-smooth), font-size var(--transition-smooth);
+            transform-origin: left top;
+        }
+
+        /* Starea plutitoare: când input-ul are focus SAU nu este gol */
+        .form__input:focus + .form__label,
+        .form__input:not(:placeholder-shown) + .form__label {
+            transform: translateY(-2.5rem) scale(0.85);
+            color: var(--color-primary);
+        }
+
+        /* --- VALIDARE ÎN TIMP REAL (No-JS Logic) --- */
+        .form__indicator {
+            position: absolute;
+            right: 1rem;
+            top: 1.2rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #475569;
+            transition: background var(--transition-smooth), box-shadow var(--transition-smooth);
+        }
+
+        /* Albastru la focus */
+        .form__input:focus ~ .form__indicator {
+            background: var(--color-primary);
+            box-shadow: 0 0 8px var(--color-primary);
+        }
+
+        /* Verde când e valid */
+        .form__input:valid ~ .form__indicator {
+            background: var(--color-success);
+            box-shadow: 0 0 8px var(--color-success);
+        }
+
+        /* Roșu când e invalid și utilizatorul a început să scrie */
+        .form__input:invalid:not(:placeholder-shown) ~ .form__indicator {
+            background: var(--color-error);
+            box-shadow: 0 0 8px var(--color-error);
+        }
+
+        .form__input:invalid:not(:placeholder-shown) {
+            border-color: var(--color-error);
+        }
+
+        /* --- THE GATEKEEPER (Button Logic via :has) --- */
+        .form__submit {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #334155;
+            color: #64748b;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: not-allowed;
+            pointer-events: none;
+            transition: all var(--transition-smooth);
+        }
+
+        /* Dacă formularul NU conține niciun element invalid, activează butonul */
+        .form:not(:has(.form__input:invalid)) .form__submit {
+            background: var(--color-primary);
+            color: white;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: pulse-gpu 2s infinite;
+            will-change: transform, box-shadow;
+        }
+
+        /* --- OPTIMIZARE GPU (Animații fără Layout Thrashing) --- */
+        @keyframes pulse-gpu {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.6);
+            }
+            70% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
+
+        /* --- DEBUG MODE (GPU Layer Highlight) --- */
+        .debug-mode .form__group,
+        .debug-mode .form__submit {
+            outline: 2px solid #00ff00;
+            position: relative;
+        }
+        
+        .debug-mode .form__group::after {
+            content: "GPU Layer";
+            position: absolute;
+            top: -15px;
+            right: 0;
+            font-size: 10px;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body class=""> <!-- Adaugă clasa "debug-mode" pentru testul GPU -->
+
+    <form class="form" onsubmit="return false;">
+        <h2 style="margin-top: 0; text-align: center; color: var(--color-primary);">Smart Login</h2>
+        
+        <div class="form__group">
+            <input type="email" id="email" class="form__input" placeholder=" " required>
+            <label for="email" class="form__label">Email Address</label>
+            <div class="form__indicator"></div>
+        </div>
+
+        <div class="form__group">
+            <input type="password" id="pass" class="form__input" placeholder=" " required minlength="8">
+            <label for="pass" class="form__label">Password (min. 8 char)</label>
+            <div class="form__indicator"></div>
+        </div>
+
+        <button type="submit" class="form__submit">
+            Trimite Datele
+        </button>
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<!-- Realizat de: Adriana | Nivel Expert RC 251 -->
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Glass Interface</title>
+  <style>
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Variabile globale ───────────────────────────────────── */
+    :root {
+      --p:             2000px;  /* Perspectiva focală */
+      --rx:            0deg;
+      --ry:            0deg;
+      --glitch-offset: 2px;    /* Aberație cromatică — actualizat din JS */
+      --spec-x:        50%;    /* Specular tracking X */
+      --spec-y:        50%;    /* Specular tracking Y */
+      --shadow-x:      0px;    /* Ray-traced shadow X */
+      --shadow-y:      20px;   /* Ray-traced shadow Y */
+    }
+
+    body {
+      background: #020202;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── Scena principală ────────────────────────────────────── */
+    .neural-engine {
+      perspective: var(--p);
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    /* ── Ancora spațială ─────────────────────────────────────── */
+    .spatial-anchor {
+      width: 360px;
+      height: 480px;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+      /* Optimization: GPU Layering enabled */
+      will-change: transform;
+      transition: transform 0.1s ease-out;
+
+      /* Ray-Traced Shadow: umbra se mișcă cu rotația */
+      filter: drop-shadow(
+        var(--shadow-x)
+        var(--shadow-y)
+        50px rgba(0, 242, 255, 0.2)
+      );
+    }
+
+    /* ── Bază straturi ───────────────────────────────────────── */
+    .layer {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      /* Optimization: GPU Layering enabled */
+      will-change: transform;
+    }
+
+    /* ── Strat 0: Nucleul de energie ─────────────────────────── */
+    .core-glow {
+      transform: translateZ(0px);
+      background: radial-gradient(
+        ellipse at 50% 60%,
+        rgba(0, 242, 255, 0.15) 0%,
+        transparent 65%
+      );
+      filter: blur(20px);
+      mix-blend-mode: screen;
+    }
+
+    /* ── Strat 1: Carcasa de sticlă (Refracție) ──────────────── */
+    .glass-chassis {
+      isolation: isolate;
+      transform: translateZ(20px);
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(30px) saturate(200%) contrast(110%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 0 100px rgba(0, 242, 255, 0.05);
+    }
+
+    /* ── Strat 2: Interfața de date (Z: 80px) ────────────────── */
+    .data-interface {
+      transform: translateZ(80px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 2rem;
+      pointer-events: none;
+    }
+
+    .header {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: rgba(0, 242, 255, 0.7);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    .stats {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: rgba(0, 242, 255, 0.45);
+    }
+
+    /* ── Aberație Cromatică Dinamică ─────────────────────────── */
+    .glitch-text {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: white;
+      letter-spacing: 0.05em;
+      text-align: center;
+      /* Red shift stânga, Blue shift dreapta */
+      text-shadow:
+        calc(var(--glitch-offset) * -1) 0 0 #ff003c,
+        var(--glitch-offset)            0 0 #00f2ff;
+      transform: translateZ(100px);
+      /* Optimization: GPU Layering enabled */
+      will-change: text-shadow;
+      /* Glitch subtil la fiecare 3 secunde */
+      animation: glitchCycle 3s steps(1) infinite;
+    }
+
+    /* ── Strat 3: Satelit orbital (Z: 180px) ─────────────────── */
+    .orbital-node {
+      transform: translateZ(180px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .satellite {
+      width: 50px;
+      height: 50px;
+      background: #00f2ff;
+      border-radius: 50%;
+      box-shadow: 0 0 30px #00f2ff, 0 0 60px rgba(0, 242, 255, 0.4);
+      mix-blend-mode: screen;
+      /* Optimization: GPU Layering enabled */
+      will-change: transform;
+      /* Satelitul trece prin fața și spatele textului (Z: 100px) */
+      animation: orbit 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Strat 4: Specular Highlight ─────────────────────────── */
+    .specular-highlight {
+      transform: translateZ(50px);
+      border-radius: 20px;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      /* Radial-gradient se mișcă INVERS față de mouse via JS */
+      background: radial-gradient(
+        circle 180px at var(--spec-x) var(--spec-y),
+        rgba(255, 255, 255, 0.07) 0%,
+        transparent 65%
+      );
+      transition: background 0.05s linear;
+    }
+
+    /* ── Keyframes ───────────────────────────────────────────── */
+
+    @keyframes orbit {
+      0%   { transform: translateX(-130px) translateZ(-60px) scale(0.7); opacity: 0.5; }
+      50%  { transform: translateX( 130px) translateZ( 80px) scale(1.2); opacity: 1;   }
+      100% { transform: translateX(-130px) translateZ(-60px) scale(0.7); opacity: 0.5; }
+    }
+
+    @keyframes glitchCycle {
+      0%, 89%, 100% {
+        transform: translateZ(100px) skewX(0deg);
+      }
+      90% {
+        transform: translateZ(100px) skewX(-4deg) translateX(3px);
+        text-shadow:
+          calc(var(--glitch-offset) * -4) 0 0 #ff003c,
+          calc(var(--glitch-offset) *  4) 0 0 #00f2ff;
+      }
+      92% {
+        transform: translateZ(100px) skewX(4deg) translateX(-3px);
+      }
+      94% {
+        transform: translateZ(100px) skewX(0deg);
+      }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.7; }
+      50%       { opacity: 1;   }
+    }
+
+  </style>
+</head>
+<body>
+
+<main class="neural-engine">
+  <div class="spatial-anchor" id="anchor">
+
+    <!-- Strat 0: Nucleul de energie (Lumină interioară) -->
+    <div class="layer core-glow"></div>
+
+    <!-- Strat 1: Carcasa de sticlă mată (Refracție) -->
+    <div class="layer glass-chassis"></div>
+
+    <!-- Strat 2: Interfața Semantică (Z: 80px) -->
+    <div class="layer data-interface">
+      <div class="header">SYSTEM_STATUS: ACTIVE</div>
+      <h1 class="glitch-text" data-text="NEURAL_LINK">NEURAL_LINK</h1>
+      <div class="stats">LATENCY: 0.002ms</div>
+    </div>
+
+    <!-- Strat 3: Obiect Floating (Z: 180px + Animație Orbitală) -->
+    <div class="layer orbital-node">
+      <div class="satellite"></div>
+    </div>
+
+    <!-- Strat 4: Scanner Light (Specular Map) -->
+    <div class="layer specular-highlight"></div>
+
+  </div>
+</main>
+
+<script>
+  /* ── Optical Displacement JS ─────────────────────────────────
+     Urmărește mouse-ul și actualizează variabilele CSS:
+     --rx / --ry          → rotația 3D a cardului
+     --glitch-offset      → aberație cromatică după viteza mouse-ului
+     --spec-x / --spec-y  → specular highlight invers față de mouse
+     --shadow-x / --shadow-y → umbra ray-traced după rotație
+  ─────────────────────────────────────────────────────────── */
+
+  const root = document.documentElement;
+  let lastX = 0, lastY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    /* Poziție normalizată: -1 la stânga/sus, +1 la dreapta/jos */
+    const nx = (e.clientX / W - 0.5) * 2;
+    const ny = (e.clientY / H - 0.5) * 2;
+
+    /* Rotație 3D */
+    const ry =  nx * 12;
+    const rx = -ny *  8;
+
+    /* Viteza mouse-ului → aberație cromatică */
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    const speed = Math.sqrt(dx * dx + dy * dy);
+    lastX = e.clientX;
+    lastY = e.clientY;
+    const glitch = Math.min(2 + speed * 0.25, 12);
+
+    /* Specular invers față de mouse */
+    const sx = (0.5 - nx * 0.4) * 100;
+    const sy = (0.5 - ny * 0.4) * 100;
+
+    /* Shadow ray-traced */
+    const shx = ry * 1.5;
+    const shy = Math.abs(rx) * 1.2 + 20;
+
+    root.style.setProperty('--rx', `${rx.toFixed(1)}deg`);
+    root.style.setProperty('--ry', `${ry.toFixed(1)}deg`);
+    root.style.setProperty('--glitch-offset', `${glitch.toFixed(1)}px`);
+    root.style.setProperty('--spec-x', `${sx.toFixed(1)}%`);
+    root.style.setProperty('--spec-y', `${sy.toFixed(1)}%`);
+    root.style.setProperty('--shadow-x', `${shx.toFixed(1)}px`);
+    root.style.setProperty('--shadow-y', `${shy.toFixed(1)}px`);
+  });
+
+  /* Reset când mouse-ul iese din pagină */
+  document.addEventListener('mouseleave', () => {
+    root.style.setProperty('--rx', '0deg');
+    root.style.setProperty('--ry', '0deg');
+    root.style.setProperty('--glitch-offset', '2px');
+  });
+</script>
+
+</body>
+</html>
