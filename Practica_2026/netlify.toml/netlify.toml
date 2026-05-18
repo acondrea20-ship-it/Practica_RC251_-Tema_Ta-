@@ -1,3 +1,6 @@
+[build]
+  publish = "Practica_2026"
+
 [[redirects]]
   from = "http://*"
   to = "https://:splat"
